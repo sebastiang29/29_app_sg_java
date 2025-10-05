@@ -1,4 +1,4 @@
-package com.example.myapp; //cambia con el nombre de tu paquete
+package com.example.a29_app_sg.push_not;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

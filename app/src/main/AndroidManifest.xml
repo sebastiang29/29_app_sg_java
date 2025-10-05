@@ -21,9 +21,9 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".MyForegroundService"
+            android:name="com.example.a29_app_sg.push_not.MyForegroundService"
             android:exported="false"
             android:foregroundServiceType="location" />
-        <receiver android:name=".NotificationActionReceiver" />
+        <receiver android:name="com.example.a29_app_sg.push_not.NotificationActionReceiver" />
     </application>
 </manifest>
