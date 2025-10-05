@@ -53,13 +53,31 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
       jsonInput.put("identificacion", identificacion);
       String jsonInputString = jsonInput.toString();
 
-      HttpRequestManager httpRequestManager = new HttpRequestManager();
-      httpRequestManager.sendPostRequest(this, serverUrl, jsonInput);
+      HttpRequestManager.sendPostRequest(this, serverUrl, jsonInput);
     } catch (Exception e) {
       e.printStackTrace();
     }
   }
 
+  private void registerToken(String identificacion, HttpRequestManager.HttpCallback callback) {
+    try {
+      String token = TokenStorageManager.getToken();
+      String serverUrl = credentialsManager.getServerUrl() + "/register_token";
+      if (token == null) {
+        Log.w(TAG, "Token is null, cannot send to server");
+        return;
+      }
+
+      JSONObject jsonInput = new JSONObject();
+      jsonInput.put("token", token);
+      jsonInput.put("identificacion", identificacion);
+      String jsonInputString = jsonInput.toString();
+
+      HttpRequestManager.sendPostRequest(this, serverUrl, jsonInput, callback);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 
   public interface OnTokenReceivedListener {
     void onTokenReceived(String token);
