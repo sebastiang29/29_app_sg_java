@@ -27,7 +27,7 @@ public class TokenStorageManager {
 
   public String getToken() {
     String token = sharedPreferences.getString(TOKEN_KEY, null);
-    Log.d(TAG, "Token retrieved: " + token);
+    Log.d(TAG, "Token retrieved: " + (token != null ? "exist" : "null"));
     return token;
   }
 

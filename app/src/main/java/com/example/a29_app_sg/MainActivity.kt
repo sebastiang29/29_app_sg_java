@@ -16,6 +16,7 @@ import com.example.a29_app_sg.ui.theme._29_app_sgTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MyFirebaseMessagingService.initializeFCMToken(this)
         enableEdgeToEdge()
         setContent {
             _29_app_sgTheme {

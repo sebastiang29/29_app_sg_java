@@ -6,18 +6,15 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.os.Log;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import com.example.a29_app_sg.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import org.json.JSONObject;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
@@ -29,6 +26,45 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
   public void onCreate() {
     super.onCreate();
     credentialsManager = new CredentialsManager(this);
+    initializeToken();
+  }
+
+  private void initializeToken() {
+    Log.d(TAG, "Inicializando token FCM automáticamente...");
+    getCurrentToken(
+      this,
+      new OnTokenReceivedListener() {
+        @Override
+        public void onTokenReceived(String token) {
+          if (token != null) {
+            Log.d(TAG, "Token obtenido automáticamente: " + token);
+            // Opcional: registrar automáticamente
+            // registerToken(MyFirebaseMessagingService.this, "user_id");
+          } else {
+            Log.w(TAG, "No se pudo obtener el token automáticamente");
+          }
+        }
+      }
+    );
+  }
+
+  private void initializeFCMToken(Context context) {
+    Log.d(TAG, "Inicializando token FCM automáticamente...");
+    getCurrentToken(
+      context,
+      new OnTokenReceivedListener() {
+        @Override
+        public void onTokenReceived(String token) {
+          if (token != null) {
+            Log.d(TAG, "Token obtenido automáticamente: " + token);
+            // Opcional: registrar automáticamente
+            // registerToken(MyFirebaseMessagingService.this, "user_id");
+          } else {
+            Log.w(TAG, "No se pudo obtener el token automáticamente");
+          }
+        }
+      }
+    );
   }
 
   @Override
@@ -36,45 +72,48 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     Log.d(TAG, "Refreshed token: " + token);
     TokenStorageManager tokenStorageManager = new TokenStorageManager(this);
     tokenStorageManager.saveToken(token);
-    // sendRegistrationToServer(token);
+    // registerToken(this, "user_id", null);
   }
 
-  private void registerToken(String identificacion) {
+  public static void registerToken(Context context, String identificacion) {
     try {
-      String token = TokenStorageManager.getToken();
-      String serverUrl = credentialsManager.getServerUrl() + "/register_token";
-      if (token == null) {
-        Log.w(TAG, "Token is null, cannot send to server");
-        return;
-      }
-
-      JSONObject jsonInput = new JSONObject();
-      jsonInput.put("token", token);
-      jsonInput.put("identificacion", identificacion);
-      String jsonInputString = jsonInput.toString();
-
-      HttpRequestManager.sendPostRequest(this, serverUrl, jsonInput);
+      registerToken(context, identificacion, null);
     } catch (Exception e) {
       e.printStackTrace();
     }
   }
 
-  private void registerToken(String identificacion, HttpRequestManager.HttpCallback callback) {
+  public static void registerToken(
+    Context context,
+    String identificacion,
+    HttpRequestManager.HttpCallback callback
+  ) {
     try {
-      String token = TokenStorageManager.getToken();
+      TokenStorageManager tokenStorageManager = new TokenStorageManager(
+        context
+      );
+      CredentialsManager credentialsManager = new CredentialsManager(context);
+      String token = tokenStorageManager.getToken();
       String serverUrl = credentialsManager.getServerUrl() + "/register_token";
       if (token == null) {
         Log.w(TAG, "Token is null, cannot send to server");
+        if (callback != null) callback.onError("FCM Token is not available");
         return;
       }
 
       JSONObject jsonInput = new JSONObject();
       jsonInput.put("token", token);
       jsonInput.put("identificacion", identificacion);
-      String jsonInputString = jsonInput.toString();
 
-      HttpRequestManager.sendPostRequest(this, serverUrl, jsonInput, callback);
+      HttpRequestManager.sendPostRequest(
+        context,
+        serverUrl,
+        jsonInput,
+        callback
+      );
     } catch (Exception e) {
+      Log.e(TAG, "Error in registerToken: " + e.getMessage());
+      if (callback != null) callback.onError("Exception: " + e.getMessage());
       e.printStackTrace();
     }
   }
@@ -100,18 +139,63 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     String button2Text = remoteMessage.getData().get("button2_text");
     String button2Url = remoteMessage.getData().get("button2_url");
     if (button1Text != null && button1Url != null) {
-      // Manejar la notificación con el pushId
-    } else {}
+      showNotificationWithButtons(
+        title,
+        body,
+        pushId,
+        button1Text,
+        button1Url,
+        button2Text,
+        button2Url
+      );
+    } else {
+      showNotification(title, body);
+    }
+  }
+
+  public static void getCurrentToken(
+    Context context,
+    OnTokenReceivedListener listener
+  ) {
+    TokenStorageManager tokenStorage = new TokenStorageManager(context);
+    String savedToken = tokenStorage.getToken();
+
+    if (savedToken != null) {
+      listener.onTokenReceived(savedToken);
+    } else {
+      // Obtener nuevo token de Firebase
+      FirebaseMessaging.getInstance()
+        .getToken()
+        .addOnCompleteListener(
+          new OnCompleteListener<String>() {
+            @Override
+            public void onComplete(@NonNull Task<String> task) {
+              if (!task.isSuccessful()) {
+                Log.w(
+                  TAG,
+                  "Fetching FCM registration token failed",
+                  task.getException()
+                );
+                listener.onTokenReceived(null);
+                return;
+              }
+              String token = task.getResult();
+              tokenStorage.saveToken(token);
+              listener.onTokenReceived(token);
+            }
+          }
+        );
+    }
   }
 
   private void showNotification(String title, String body) {
     NotificationManager notificationManager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    String channelId = "my_channel_id";
+    String channelId = "fcm_notifications"; // Cambia esto por el ID
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       NotificationChannel channel = new NotificationChannel(
         channelId,
-        "My Channel",
+        "Push Notifications",
         NotificationManager.IMPORTANCE_DEFAULT
       );
       notificationManager.createNotificationChannel(channel);
@@ -139,11 +223,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
   ) {
     NotificationManager notificationManager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    String channelId = "my_channel_id"; // Cambia esto por el ID
+    String channelId = "fcm_notifications"; // Cambia esto por el ID
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       NotificationChannel channel = new NotificationChannel(
         channelId,
-        "My Channel",
+        "Push Notifications",
         NotificationManager.IMPORTANCE_DEFAULT
       );
       notificationManager.createNotificationChannel(channel);
@@ -161,7 +245,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     // actionIntent1.setAction("ACTION_BUTTON_1");
     actionIntent1.putExtra("url", button1Url);
     actionIntent1.putExtra("push_id", pushId);
-    actionIntent1.putExtra("button1_text", button1Text);
+    actionIntent1.putExtra("button_text", button1Text);
     PendingIntent actionPendingIntent1 = PendingIntent.getBroadcast(
       this,
       1,
@@ -179,7 +263,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
       // actionIntent2.setAction("ACTION_BUTTON_2");
       actionIntent2.putExtra("url", button2Url);
       actionIntent2.putExtra("push_id", pushId);
-      actionIntent2.putExtra("button2_text", button2Text);
+      actionIntent2.putExtra("button_text", button2Text);
       PendingIntent actionPendingIntent2 = PendingIntent.getBroadcast(
         this,
         2,
