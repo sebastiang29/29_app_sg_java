@@ -48,7 +48,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     );
   }
 
-  private void initializeFCMToken(Context context) {
+  public static void initializeFCMToken(Context context) {
     Log.d(TAG, "Inicializando token FCM automáticamente...");
     getCurrentToken(
       context,
