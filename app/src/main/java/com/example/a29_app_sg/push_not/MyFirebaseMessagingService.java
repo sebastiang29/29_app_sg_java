@@ -83,11 +83,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
   }
 
-  public static void registerToken(
-    Context context,
-    String identificacion,
-    HttpRequestManager.HttpCallback callback
-  ) {
+  public static void registerToken( Context context, String identificacion, HttpRequestManager.HttpCallback callback) {
     try {
       TokenStorageManager tokenStorageManager = new TokenStorageManager(
         context
@@ -100,17 +96,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (callback != null) callback.onError("FCM Token is not available");
         return;
       }
-
       JSONObject jsonInput = new JSONObject();
       jsonInput.put("token", token);
       jsonInput.put("identificacion", identificacion);
-
-      HttpRequestManager.sendPostRequest(
-        context,
-        serverUrl,
-        jsonInput,
-        callback
-      );
+      HttpRequestManager.sendPostRequest(context, serverUrl, jsonInput, callback);
     } catch (Exception e) {
       Log.e(TAG, "Error in registerToken: " + e.getMessage());
       if (callback != null) callback.onError("Exception: " + e.getMessage());
@@ -125,42 +114,53 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
   @Override
   public void onMessageReceived(RemoteMessage remoteMessage) {
     super.onMessageReceived(remoteMessage);
-
+    Log.d(TAG, "🚀 === PUSH NOTIFICATION RECIBIDA ===");
+    Log.d(TAG, "📡 From: " + remoteMessage.getFrom());
+    Log.d(TAG, "📦 Message ID: " + remoteMessage.getMessageId());
+    Log.d(TAG, "⏰ Sent Time: " + remoteMessage.getSentTime());
+    Log.d(TAG, "🏷️ Message Type: " + remoteMessage.getMessageType());
+    Log.d(TAG, "🎯 To: " + remoteMessage.getTo());
+    if (remoteMessage.getNotification() != null) {
+        Log.d(TAG, "🔔 === NOTIFICATION PAYLOAD ===");
+        Log.d(TAG, "📝 Title: " + remoteMessage.getNotification().getTitle());
+        Log.d(TAG, "📄 Body: " + remoteMessage.getNotification().getBody());
+        Log.d(TAG, "🏷️ Tag: " + remoteMessage.getNotification().getTag());
+        Log.d(TAG, "🎨 Color: " + remoteMessage.getNotification().getColor());
+        Log.d(TAG, "🔊 Sound: " + remoteMessage.getNotification().getSound());
+        Log.d(TAG, "🖼️ Image: " + remoteMessage.getNotification().getImageUrl());
+        Log.d(TAG, "📊 Channel: " + remoteMessage.getNotification().getChannelId());
+        Log.d(TAG, "👆 Click Action: " + remoteMessage.getNotification().getClickAction());
+    } else {
+        Log.d(TAG, "❌ No notification payload");
+    }
     String title = null;
     String body = null;
-    String pushId = remoteMessage.getData().get("push_id");
+    String pushId = remoteMessage.getMessageId();
     if (remoteMessage.getNotification() != null) {
       title = remoteMessage.getNotification().getTitle();
       body = remoteMessage.getNotification().getBody();
     }
-
+    /* if (title == null) title = remoteMessage.getData().get("title");
+    if (body == null) body = remoteMessage.getData().get("body"); */
+    if (title == null) title = "Notificación";
+    if (body == null) body = "Prueba de notificación";
     String button1Text = remoteMessage.getData().get("button1_text");
     String button1Url = remoteMessage.getData().get("button1_url");
     String button2Text = remoteMessage.getData().get("button2_text");
     String button2Url = remoteMessage.getData().get("button2_url");
     if (button1Text != null && button1Url != null) {
-      showNotificationWithButtons(
-        title,
-        body,
-        pushId,
-        button1Text,
-        button1Url,
-        button2Text,
-        button2Url
+      showNotificationWithButtons(title, body, pushId, button1Text, button1Url, button2Text, button2Url
       );
     } else {
-      showNotification(title, body);
+      showNotification(title, body, pushId);
     }
   }
 
-  public static void getCurrentToken(
-    Context context,
-    OnTokenReceivedListener listener
-  ) {
+  public static void getCurrentToken(Context context, OnTokenReceivedListener listener) {
     TokenStorageManager tokenStorage = new TokenStorageManager(context);
     String savedToken = tokenStorage.getToken();
 
-    if (savedToken != null) {
+    /* if (savedToken != null) {
       listener.onTokenReceived(savedToken);
     } else {
       // Obtener nuevo token de Firebase
@@ -185,51 +185,63 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             }
           }
         );
-    }
+    } */
+    FirebaseMessaging.getInstance()
+      .getToken()
+      .addOnCompleteListener(
+        new OnCompleteListener<String>() {
+          @Override
+          public void onComplete(@NonNull Task<String> task) {
+            if (!task.isSuccessful()) {
+              Log.w(
+                TAG,
+                "Fetching FCM registration token failed",
+                task.getException()
+              );
+              listener.onTokenReceived(null);
+              return;
+            }
+            String token = task.getResult();
+            tokenStorage.saveToken(token);
+            listener.onTokenReceived(token);
+          }
+        }
+      );
   }
 
-  private void showNotification(String title, String body) {
-    NotificationManager notificationManager =
-      (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+  private void showNotification(String title, String body, String push) {
+    NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     String channelId = "fcm_notifications"; // Cambia esto por el ID
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      NotificationChannel channel = new NotificationChannel(
-        channelId,
-        "Push Notifications",
-        NotificationManager.IMPORTANCE_DEFAULT
-      );
+      NotificationChannel channel = new NotificationChannel(channelId, "Push Notifications", NotificationManager.IMPORTANCE_HIGH);
+      channel.setVibrationPattern(new long[]{100, 200, 300});
+      channel.enableVibration(true);
+      channel.enableLights(true);
       notificationManager.createNotificationChannel(channel);
     }
-
     NotificationCompat.Builder notificationBuilder =
       new NotificationCompat.Builder(this, channelId)
         .setSmallIcon(R.drawable.ic_launcher_foreground)
         .setContentTitle(title)
         .setContentText(body)
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        .setAutoCancel(true);
-
-    notificationManager.notify(1, notificationBuilder.build());
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setDefaults(NotificationCompat.DEFAULT_ALL)
+        .setAutoCancel(true)
+        .setFullScreenIntent(null, true)
+        .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+    int notificationId = (int) System.currentTimeMillis();
+    notificationManager.notify(notificationId, notificationBuilder.build());
   }
 
-  private void showNotificationWithButtons(
-    String title,
-    String body,
-    String pushId,
-    String button1Text,
-    String button1Url,
-    String button2Text,
-    String button2Url
-  ) {
-    NotificationManager notificationManager =
-      (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+  private void showNotificationWithButtons(String title, String body, String pushId, String button1Text, String button1Url, String button2Text, String button2Url) {
+    NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     String channelId = "fcm_notifications"; // Cambia esto por el ID
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      NotificationChannel channel = new NotificationChannel(
-        channelId,
-        "Push Notifications",
-        NotificationManager.IMPORTANCE_DEFAULT
-      );
+      NotificationChannel channel = new NotificationChannel(channelId, "Push Notifications", NotificationManager.IMPORTANCE_HIGH);
+      channel.setVibrationPattern(new long[]{100, 200, 300});
+      channel.enableVibration(true);
+      channel.enableLights(true);
       notificationManager.createNotificationChannel(channel);
     }
     NotificationCompat.Builder notificationBuilder =
@@ -237,9 +249,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         .setSmallIcon(R.drawable.ic_launcher_foreground) // Cambia esto por tu ícono
         .setContentTitle(title)
         .setContentText(body)
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        .setAutoCancel(true);
-
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setDefaults(NotificationCompat.DEFAULT_ALL)
+        .setAutoCancel(true)
+        .setFullScreenIntent(null, true)
+        .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
     // Botón 1
     Intent actionIntent1 = new Intent(this, NotificationActionReceiver.class);
     // actionIntent1.setAction("ACTION_BUTTON_1");
@@ -252,11 +267,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
       actionIntent1,
       PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
     );
-    notificationBuilder.addAction(
-      R.drawable.ic_launcher_foreground, // Cambia esto por el ícono del botón
-      button1Text,
-      actionPendingIntent1
-    );
+    notificationBuilder.addAction(R.drawable.ic_launcher_foreground, button1Text, actionPendingIntent1);
     // Botón 2
     if (button2Text != null && button2Url != null) {
       Intent actionIntent2 = new Intent(this, NotificationActionReceiver.class);
@@ -268,14 +279,34 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         this,
         2,
         actionIntent2,
-        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-      );
-      notificationBuilder.addAction(
-        R.drawable.ic_launcher_foreground, // Cambia esto por el ícono del botón
-        button2Text,
-        actionPendingIntent2
-      );
+      PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+      notificationBuilder.addAction(R.drawable.ic_launcher_foreground, button2Text, actionPendingIntent2);
     }
-    notificationManager.notify(1, notificationBuilder.build());
+    int notificationId = (int) System.currentTimeMillis();
+    notificationManager.notify(notificationId, notificationBuilder.build());
   }
+
+  /* private boolean isAppInForeground() {
+    android.app.ActivityManager activityManager =
+      (android.app.ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+    if (activityManager != null) {
+      java.util.List<
+        android.app.ActivityManager.RunningAppProcessInfo
+      > processes = activityManager.getRunningAppProcesses();
+
+      if (processes != null) {
+        String packageName = getPackageName();
+        for (android.app.ActivityManager.RunningAppProcessInfo process : processes) {
+          if (
+            process.processName.equals(packageName) &&
+            process.importance ==
+            android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  } */
 }
