@@ -1,0 +1,137 @@
+package com.example.a29_app_sg;
+
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import androidx.activity.ComponentActivity;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
+import com.example.a29_app_sg.push_not.MyFirebaseMessagingService;
+
+public class MainActivity extends ComponentActivity {
+
+  //Permisos FCM
+  private static final String TAG = "MainActivity";
+  private ActivityResultLauncher<String> requestPermissionLauncher;
+
+  //Permisos FCM
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+
+    //Permisos FCM
+    requestPermissionLauncher = registerForActivityResult(
+      new ActivityResultContracts.RequestPermission(),
+      isGranted -> {
+        if (isGranted) {
+          Log.d(TAG, "Permiso de notificaciones concedido");
+        } else {
+          Log.d(TAG, "Permiso de notificaciones denegado");
+        }
+        initializeFCM();
+      }
+    );
+    requestNotificationPermissions();
+    //Permisos FCM
+    createUI();
+  }
+
+  private void requestNotificationPermissions() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+        Log.d(TAG, "🔔 Permiso de notificaciones ya concedido");
+        initializeFCM();
+      } else {
+        Log.d(TAG, "🔔 Solicitando permiso de notificaciones");
+        requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+      }
+    } else {
+      Log.d(TAG, "🔔 No se requieren permisos para notificaciones en esta versión de Android");
+      initializeFCM();
+    }
+  }
+
+  private void initializeFCM() {
+    MyFirebaseMessagingService.initializeFCMToken(this);
+  }
+
+  public void requestPushPermissions() {
+    Log.d(TAG, "🔔 Solicitando permisos desde Service...");
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+    }
+  }
+
+  public boolean hasNotificationPermission() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      return (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED);
+    } else {
+      return true;
+    }
+  }
+
+  private void createUI() {
+    // Layout principal
+    LinearLayout mainLayout = new LinearLayout(this);
+    mainLayout.setOrientation(LinearLayout.VERTICAL);
+    mainLayout.setPadding(48, 48, 48, 48);
+
+    // TextView principal
+    TextView titleText = new TextView(this);
+    titleText.setText("Hello Android!");
+    titleText.setTextSize(24);
+    titleText.setGravity(android.view.Gravity.CENTER);
+
+    // Espaciador
+    View spacer1 = new View(this);
+    LinearLayout.LayoutParams spacerParams1 = new LinearLayout.LayoutParams(
+      LinearLayout.LayoutParams.MATCH_PARENT,
+      100
+    );
+    spacer1.setLayoutParams(spacerParams1);
+
+    // ✅ BOTÓN 1: Solicitar permisos push
+    Button requestButton = new Button(this);
+    requestButton.setText("🔔 Solicitar Permisos Push");
+    LinearLayout.LayoutParams buttonParams1 = new LinearLayout.LayoutParams(
+      LinearLayout.LayoutParams.MATCH_PARENT,
+      LinearLayout.LayoutParams.WRAP_CONTENT
+    );
+    buttonParams1.setMargins(0, 0, 0, 32);
+    requestButton.setLayoutParams(buttonParams1);
+    requestButton.setOnClickListener(v -> {
+      requestPushPermissions();
+    });
+
+    // ✅ BOTÓN 2: Verificar permisos push
+    Button checkButton = new Button(this);
+    checkButton.setText("🔍 Verificar Permisos Push");
+    LinearLayout.LayoutParams buttonParams2 = new LinearLayout.LayoutParams(
+      LinearLayout.LayoutParams.MATCH_PARENT,
+      LinearLayout.LayoutParams.WRAP_CONTENT
+    );
+    checkButton.setLayoutParams(buttonParams2);
+    checkButton.setOnClickListener(v -> {
+      boolean hasPermission = hasNotificationPermission();
+      String status = hasPermission ? "✅ CONCEDIDOS" : "❌ DENEGADOS";
+      Log.d(TAG, "📱 Estado permisos: " + status);
+    });
+
+    // Agregar vistas al layout
+    mainLayout.addView(titleText);
+    mainLayout.addView(spacer1);
+    mainLayout.addView(requestButton);
+    mainLayout.addView(checkButton);
+
+    // Establecer layout como contenido
+    setContentView(mainLayout);
+  }
+}

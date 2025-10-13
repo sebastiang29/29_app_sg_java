@@ -17,9 +17,9 @@ import androidx.compose.material3.Button
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import android.util.Log
 
 //Plugin FCM
-import android.util.Log
 import com.example.a29_app_sg.push_not.MyFirebaseMessagingService
 //Plugin FCM
 //Permisos FCM
