@@ -84,8 +84,14 @@ class MainActivity : ComponentActivity() {
         Log.d(TAG, "🔔 Solicitando permisos desde Service...")
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    fun hasNotificationPermission(): Boolean {
+        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
         } else {
-            Log.d(TAG, "📱 Android < 13, no requiere permisos")
+            true
         }
     }
     //Permisos FCM
