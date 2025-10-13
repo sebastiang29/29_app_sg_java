@@ -15,15 +15,15 @@ public class JavaScriptInterface {
   @JavascriptInterface
   public void registerToken(String identificacion) {
     Log.d(TAG, "registerToken called with identificacion: " + identificacion);
-    MyFirebaseMessagingService.messagingService.registerToken(identificacion, new HttpRequestManager.Callback() {
+    MyFirebaseMessagingService.registerToken(context, identificacion, new HttpRequestManager.HttpCallback() {
       @Override
       public void onSuccess(String response) {
         Log.d(TAG, "Token registered successfully: " + response);
       }
 
       @Override
-      public void onFailure(Exception e) {
-        Log.e(TAG, "Failed to register token", e);
+      public void onError(String error) {
+        Log.e(TAG, "Failed to register token: " + error);
       }
     });
   }
