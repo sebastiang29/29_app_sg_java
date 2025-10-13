@@ -13,6 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.a29_app_sg.ui.theme._29_app_sgTheme
 
+//Plugin FCM
+import android.util.Log
+import com.example.a29_app_sg.push_not.MyFirebaseMessagingService
+//Plugin FCM
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
