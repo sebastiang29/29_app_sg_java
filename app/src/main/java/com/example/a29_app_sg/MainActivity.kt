@@ -12,6 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.a29_app_sg.ui.theme._29_app_sgTheme
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 
 //Plugin FCM
 import android.util.Log
@@ -99,10 +104,48 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
+    val context = LocalContext.current
+    
+    Column(
         modifier = modifier
-    )
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "Hello $name!",
+            modifier = Modifier.padding(bottom = 32.dp)
+        )
+        
+        // ✅ BOTÓN 1: Solicitar permisos push
+        Button(
+            onClick = {
+                if (context is MainActivity) {
+                    context.requestPushPermissions()
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        ) {
+            Text("🔔 Solicitar Permisos Push")
+        }
+        
+        // ✅ BOTÓN 2: Verificar permisos push
+        Button(
+            onClick = {
+                if (context is MainActivity) {
+                    val hasPermission = context.hasNotificationPermission()
+                    val status = if (hasPermission) "✅ CONCEDIDOS" else "❌ DENEGADOS"
+                    Log.d("MainActivity", "📱 Estado permisos: $status")
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("🔍 Verificar Permisos Push")
+        }
+    }
 }
 
 @Preview(showBackground = true)
