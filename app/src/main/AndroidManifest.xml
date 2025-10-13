@@ -3,8 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools">
     <!-- Plugin FCM -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" /> <!-- ✅ AGREGAR -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Plugin FCM -->
     <application
         android:allowBackup="true"

@@ -17,15 +17,37 @@ import com.example.a29_app_sg.ui.theme._29_app_sgTheme
 import android.util.Log
 import com.example.a29_app_sg.push_not.MyFirebaseMessagingService
 //Plugin FCM
+//Permisos FCM
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+//Permisos FCM
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
+    //Permisos FCM
+    companion object {
+        private const val TAG = "MainActivity"
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { 
+        isGranted: Boolean ->
+        if (isGranted) {
+            Log.d(TAG, "✅ Permiso de notificaciones concedido")
+        } else {
+            Log.w(TAG, "❌ Permiso de notificaciones denegado")
+        }
+        initializeFCM()
+    }
+    //Permisos FCM
+    override fun onCreate(savedInstanceState: Bundle ?) {
         super.onCreate(savedInstanceState)
-        MyFirebaseMessagingService.initializeFCMToken(this)
-        enableEdgeToEdge()
+        requestNotificationPermissions()
+        //MyFirebaseMessagingService().initializeFCMToken(this)
         setContent {
             _29_app_sgTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(modifier = Modifier.fillMaxSize()) {
+                    innerPadding ->
                     Greeting(
                         name = "Android",
                         modifier = Modifier.padding(innerPadding)
@@ -34,6 +56,39 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    //Permisos FCM
+    private fun requestNotificationPermissions() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED -> {
+                    Log.d(TAG, "🔔 Permiso de notificaciones ya concedido")
+                    initializeFCM()
+                }
+                else -> {
+                    Log.d(TAG, "🔔 Solicitando permiso de notificaciones")
+                    requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        } else {
+            Log.d(TAG, "🔔 No se requieren permisos para notificaciones en esta versión de Android")
+            initializeFCM()
+        }
+    }
+
+    private fun initializeFCM() {
+        MyFirebaseMessagingService.initializeFCMToken(this)
+    }
+
+    fun requestPushPermissions() {
+        Log.d(TAG, "🔔 Solicitando permisos desde Service...")
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            Log.d(TAG, "📱 Android < 13, no requiere permisos")
+        }
+    }
+    //Permisos FCM
 }
 
 @Composable

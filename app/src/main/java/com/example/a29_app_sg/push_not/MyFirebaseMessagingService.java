@@ -26,45 +26,20 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
   public void onCreate() {
     super.onCreate();
     credentialsManager = new CredentialsManager(this);
-    initializeToken();
-  }
-
-  private void initializeToken() {
-    Log.d(TAG, "Inicializando token FCM automáticamente...");
-    getCurrentToken(
-      this,
-      new OnTokenReceivedListener() {
-        @Override
-        public void onTokenReceived(String token) {
-          if (token != null) {
-            Log.d(TAG, "Token obtenido automáticamente: " + token);
-            // Opcional: registrar automáticamente
-            // registerToken(MyFirebaseMessagingService.this, "user_id");
-          } else {
-            Log.w(TAG, "No se pudo obtener el token automáticamente");
-          }
-        }
-      }
-    );
   }
 
   public static void initializeFCMToken(Context context) {
     Log.d(TAG, "Inicializando token FCM automáticamente...");
-    getCurrentToken(
-      context,
-      new OnTokenReceivedListener() {
-        @Override
-        public void onTokenReceived(String token) {
-          if (token != null) {
-            Log.d(TAG, "Token obtenido automáticamente: " + token);
-            // Opcional: registrar automáticamente
-            // registerToken(MyFirebaseMessagingService.this, "user_id");
-          } else {
-            Log.w(TAG, "No se pudo obtener el token automáticamente");
-          }
+    getCurrentToken(context, new OnTokenReceivedListener() {
+      @Override
+      public void onTokenReceived(String token) {
+        if (token != null) {
+          Log.d(TAG, "Token obtenido automáticamente: " + token);
+        } else {
+          Log.w(TAG, "No se pudo obtener el token automáticamente");
         }
       }
-    );
+    });
   }
 
   @Override
@@ -83,7 +58,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
   }
 
-  public static void registerToken( Context context, String identificacion, HttpRequestManager.HttpCallback callback) {
+  public static void registerToken(Context context, String identificacion, HttpRequestManager.HttpCallback callback) {
     try {
       TokenStorageManager tokenStorageManager = new TokenStorageManager(
         context
@@ -158,34 +133,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
   public static void getCurrentToken(Context context, OnTokenReceivedListener listener) {
     TokenStorageManager tokenStorage = new TokenStorageManager(context);
-    String savedToken = tokenStorage.getToken();
-
-    /* if (savedToken != null) {
-      listener.onTokenReceived(savedToken);
-    } else {
-      // Obtener nuevo token de Firebase
-      FirebaseMessaging.getInstance()
-        .getToken()
-        .addOnCompleteListener(
-          new OnCompleteListener<String>() {
-            @Override
-            public void onComplete(@NonNull Task<String> task) {
-              if (!task.isSuccessful()) {
-                Log.w(
-                  TAG,
-                  "Fetching FCM registration token failed",
-                  task.getException()
-                );
-                listener.onTokenReceived(null);
-                return;
-              }
-              String token = task.getResult();
-              tokenStorage.saveToken(token);
-              listener.onTokenReceived(token);
-            }
-          }
-        );
-    } */
     FirebaseMessaging.getInstance()
       .getToken()
       .addOnCompleteListener(
@@ -285,28 +232,4 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     int notificationId = (int) System.currentTimeMillis();
     notificationManager.notify(notificationId, notificationBuilder.build());
   }
-
-  /* private boolean isAppInForeground() {
-    android.app.ActivityManager activityManager =
-      (android.app.ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-    if (activityManager != null) {
-      java.util.List<
-        android.app.ActivityManager.RunningAppProcessInfo
-      > processes = activityManager.getRunningAppProcesses();
-
-      if (processes != null) {
-        String packageName = getPackageName();
-        for (android.app.ActivityManager.RunningAppProcessInfo process : processes) {
-          if (
-            process.processName.equals(packageName) &&
-            process.importance ==
-            android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
-          ) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  } */
 }
