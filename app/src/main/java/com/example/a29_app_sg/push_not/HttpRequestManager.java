@@ -76,7 +76,7 @@ public class HttpRequestManager {
       }
     ).start();
   }
-  
+
   public interface HttpCallback {
     void onSuccess(String response);
     void onError(String error);

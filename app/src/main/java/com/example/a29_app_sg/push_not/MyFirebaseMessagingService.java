@@ -30,16 +30,19 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
   public static void initializeFCMToken(Context context) {
     Log.d(TAG, "Inicializando token FCM automáticamente...");
-    getCurrentToken(context, new OnTokenReceivedListener() {
-      @Override
-      public void onTokenReceived(String token) {
-        if (token != null) {
-          Log.d(TAG, "Token obtenido automáticamente: " + token);
-        } else {
-          Log.w(TAG, "No se pudo obtener el token automáticamente");
+    getCurrentToken(
+      context,
+      new OnTokenReceivedListener() {
+        @Override
+        public void onTokenReceived(String token) {
+          if (token != null) {
+            Log.d(TAG, "Token obtenido automáticamente: " + token);
+          } else {
+            Log.w(TAG, "No se pudo obtener el token automáticamente");
+          }
         }
       }
-    });
+    );
   }
 
   @Override
@@ -58,7 +61,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
   }
 
-  public static void registerToken(Context context, String identificacion, HttpRequestManager.HttpCallback callback) {
+  public static void registerToken(
+    Context context,
+    String identificacion,
+    HttpRequestManager.HttpCallback callback
+  ) {
     try {
       TokenStorageManager tokenStorageManager = new TokenStorageManager(
         context
@@ -74,7 +81,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
       JSONObject jsonInput = new JSONObject();
       jsonInput.put("token", token);
       jsonInput.put("identificacion", identificacion);
-      HttpRequestManager.sendPostRequest(context, serverUrl, jsonInput, callback);
+      HttpRequestManager.sendPostRequest(
+        context,
+        serverUrl,
+        jsonInput,
+        callback
+      );
     } catch (Exception e) {
       Log.e(TAG, "Error in registerToken: " + e.getMessage());
       if (callback != null) callback.onError("Exception: " + e.getMessage());
@@ -96,17 +108,23 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     Log.d(TAG, "🏷️ Message Type: " + remoteMessage.getMessageType());
     Log.d(TAG, "🎯 To: " + remoteMessage.getTo());
     if (remoteMessage.getNotification() != null) {
-        Log.d(TAG, "🔔 === NOTIFICATION PAYLOAD ===");
-        Log.d(TAG, "📝 Title: " + remoteMessage.getNotification().getTitle());
-        Log.d(TAG, "📄 Body: " + remoteMessage.getNotification().getBody());
-        Log.d(TAG, "🏷️ Tag: " + remoteMessage.getNotification().getTag());
-        Log.d(TAG, "🎨 Color: " + remoteMessage.getNotification().getColor());
-        Log.d(TAG, "🔊 Sound: " + remoteMessage.getNotification().getSound());
-        Log.d(TAG, "🖼️ Image: " + remoteMessage.getNotification().getImageUrl());
-        Log.d(TAG, "📊 Channel: " + remoteMessage.getNotification().getChannelId());
-        Log.d(TAG, "👆 Click Action: " + remoteMessage.getNotification().getClickAction());
+      Log.d(TAG, "🔔 === NOTIFICATION PAYLOAD ===");
+      Log.d(TAG, "📝 Title: " + remoteMessage.getNotification().getTitle());
+      Log.d(TAG, "📄 Body: " + remoteMessage.getNotification().getBody());
+      Log.d(TAG, "🏷️ Tag: " + remoteMessage.getNotification().getTag());
+      Log.d(TAG, "🎨 Color: " + remoteMessage.getNotification().getColor());
+      Log.d(TAG, "🔊 Sound: " + remoteMessage.getNotification().getSound());
+      Log.d(TAG, "🖼️ Image: " + remoteMessage.getNotification().getImageUrl());
+      Log.d(
+        TAG,
+        "📊 Channel: " + remoteMessage.getNotification().getChannelId()
+      );
+      Log.d(
+        TAG,
+        "👆 Click Action: " + remoteMessage.getNotification().getClickAction()
+      );
     } else {
-        Log.d(TAG, "❌ No notification payload");
+      Log.d(TAG, "❌ No notification payload");
     }
     String title = null;
     String body = null;
@@ -119,19 +137,33 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     if (body == null) body = remoteMessage.getData().get("body"); */
     if (title == null) title = "Notificación";
     if (body == null) body = "Prueba de notificación";
+    /* String button1Text = "Google";
+    String button1Url = "http://google.com";
+    String button2Text = "Facebook";
+    String button2Url = "http://facebook.com"; */
     String button1Text = remoteMessage.getData().get("button1_text");
     String button1Url = remoteMessage.getData().get("button1_url");
     String button2Text = remoteMessage.getData().get("button2_text");
     String button2Url = remoteMessage.getData().get("button2_url");
     if (button1Text != null && button1Url != null) {
-      showNotificationWithButtons(title, body, pushId, button1Text, button1Url, button2Text, button2Url
+      showNotificationWithButtons(
+        title,
+        body,
+        pushId,
+        button1Text,
+        button1Url,
+        button2Text,
+        button2Url
       );
     } else {
       showNotification(title, body, pushId);
     }
   }
 
-  public static void getCurrentToken(Context context, OnTokenReceivedListener listener) {
+  public static void getCurrentToken(
+    Context context,
+    OnTokenReceivedListener listener
+  ) {
     TokenStorageManager tokenStorage = new TokenStorageManager(context);
     FirebaseMessaging.getInstance()
       .getToken()
@@ -157,11 +189,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
   }
 
   private void showNotification(String title, String body, String push) {
-    NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    Log.d(TAG, "Mostrando notificación simple");
+    NotificationManager notificationManager =
+      (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     String channelId = "fcm_notifications"; // Cambia esto por el ID
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      NotificationChannel channel = new NotificationChannel(channelId, "Push Notifications", NotificationManager.IMPORTANCE_HIGH);
-      channel.setVibrationPattern(new long[]{100, 200, 300});
+      NotificationChannel channel = new NotificationChannel(
+        channelId,
+        "Push Notifications",
+        NotificationManager.IMPORTANCE_HIGH
+      );
+      channel.setVibrationPattern(new long[] { 100, 200, 300 });
       channel.enableVibration(true);
       channel.enableLights(true);
       notificationManager.createNotificationChannel(channel);
@@ -181,12 +219,26 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     notificationManager.notify(notificationId, notificationBuilder.build());
   }
 
-  private void showNotificationWithButtons(String title, String body, String pushId, String button1Text, String button1Url, String button2Text, String button2Url) {
-    NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+  private void showNotificationWithButtons(
+    String title,
+    String body,
+    String pushId,
+    String button1Text,
+    String button1Url,
+    String button2Text,
+    String button2Url
+  ) {
+    Log.d(TAG, "Mostrando notificación con botones");
+    NotificationManager notificationManager =
+      (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     String channelId = "fcm_notifications"; // Cambia esto por el ID
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      NotificationChannel channel = new NotificationChannel(channelId, "Push Notifications", NotificationManager.IMPORTANCE_HIGH);
-      channel.setVibrationPattern(new long[]{100, 200, 300});
+      NotificationChannel channel = new NotificationChannel(
+        channelId,
+        "Push Notifications",
+        NotificationManager.IMPORTANCE_HIGH
+      );
+      channel.setVibrationPattern(new long[] { 100, 200, 300 });
       channel.enableVibration(true);
       channel.enableLights(true);
       notificationManager.createNotificationChannel(channel);
@@ -204,7 +256,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
     // Botón 1
     Intent actionIntent1 = new Intent(this, NotificationActionReceiver.class);
-    // actionIntent1.setAction("ACTION_BUTTON_1");
+    actionIntent1.setAction("com.example.a29_app_sg.push_not.NOTIFICATION_ACTION");
     actionIntent1.putExtra("url", button1Url);
     actionIntent1.putExtra("push_id", pushId);
     actionIntent1.putExtra("button_text", button1Text);
@@ -214,11 +266,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
       actionIntent1,
       PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
     );
-    notificationBuilder.addAction(R.drawable.ic_launcher_foreground, button1Text, actionPendingIntent1);
+    notificationBuilder.addAction(
+      R.drawable.ic_launcher_foreground,
+      button1Text,
+      actionPendingIntent1
+    );
     // Botón 2
     if (button2Text != null && button2Url != null) {
       Intent actionIntent2 = new Intent(this, NotificationActionReceiver.class);
-      // actionIntent2.setAction("ACTION_BUTTON_2");
+      actionIntent2.setAction("com.example.a29_app_sg.push_not.NOTIFICATION_ACTION");
       actionIntent2.putExtra("url", button2Url);
       actionIntent2.putExtra("push_id", pushId);
       actionIntent2.putExtra("button_text", button2Text);
@@ -226,8 +282,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         this,
         2,
         actionIntent2,
-      PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-      notificationBuilder.addAction(R.drawable.ic_launcher_foreground, button2Text, actionPendingIntent2);
+        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+      );
+      notificationBuilder.addAction(
+        R.drawable.ic_launcher_foreground,
+        button2Text,
+        actionPendingIntent2
+      );
     }
     int notificationId = (int) System.currentTimeMillis();
     notificationManager.notify(notificationId, notificationBuilder.build());

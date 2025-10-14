@@ -66,12 +66,10 @@ public class CredentialsManager {
     return isLoaded;
   }
 
-  // Función para obtener todas las credenciales en un objeto
   public CredentialsData getAllCredentials() {
     return new CredentialsData(getServerUrl(), getApiKey());
   }
 
-  // Clase interna para encapsular todas las credenciales
   public static class CredentialsData {
 
     public final String serverUrl;

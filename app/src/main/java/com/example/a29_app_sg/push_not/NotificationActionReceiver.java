@@ -24,6 +24,9 @@ public class NotificationActionReceiver extends BroadcastReceiver {
     String url = intent.getStringExtra("url");
     String pushId = intent.getStringExtra("push_id");
     String buttonText = intent.getStringExtra("button_text");
+    Log.d(TAG, "Button clicked: " + buttonText + ", URL: " + url);
+    Log.d(TAG, "Server URL: " + serverUrl);
+    Log.d(TAG, "Push ID: " + pushId);
     if (url != null) {
       try {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -34,9 +37,9 @@ public class NotificationActionReceiver extends BroadcastReceiver {
         e.printStackTrace();
       }
     }
-    if (pushId != null && buttonText != null) {
+    /* if (pushId != null && buttonText != null) {
       sendHttpRequest(context, serverUrl, url, pushId, buttonText);
-    }
+    } */
     // Muestra un Toast como confirmación
     //Toast.makeText(context, "Abriendo: " + url, Toast.LENGTH_SHORT).show();
   }
