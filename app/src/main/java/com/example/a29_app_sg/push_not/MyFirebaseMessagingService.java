@@ -133,14 +133,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
       title = remoteMessage.getNotification().getTitle();
       body = remoteMessage.getNotification().getBody();
     }
-    /* if (title == null) title = remoteMessage.getData().get("title");
-    if (body == null) body = remoteMessage.getData().get("body"); */
     if (title == null) title = "Notificación";
     if (body == null) body = "Prueba de notificación";
-    /* String button1Text = "Google";
-    String button1Url = "http://google.com";
-    String button2Text = "Facebook";
-    String button2Url = "http://facebook.com"; */
+    String url = remoteMessage.getData().get("url");
     String button1Text = remoteMessage.getData().get("button1_text");
     String button1Url = remoteMessage.getData().get("button1_url");
     String button2Text = remoteMessage.getData().get("button2_text");
@@ -156,7 +151,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         button2Url
       );
     } else {
-      showNotification(title, body, pushId);
+      showNotification(title, body, url, pushId);
     }
   }
 
@@ -188,11 +183,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
       );
   }
 
-  private void showNotification(String title, String body, String push) {
+  private void showNotification(String title, String body, String url, String pushId) {
     Log.d(TAG, "Mostrando notificación simple");
     NotificationManager notificationManager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    String channelId = "fcm_notifications"; // Cambia esto por el ID
+    String channelId = "fcm_notifications";
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       NotificationChannel channel = new NotificationChannel(
         channelId,
@@ -215,6 +210,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         .setFullScreenIntent(null, true)
         .setCategory(NotificationCompat.CATEGORY_MESSAGE)
         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+    Intent actionIntent = new Intent(this, NotificationActionReceiver.class);
+    actionIntent.setAction("com.example.a29_app_sg.push_not.NOTIFICATION_ACTION");
+    actionIntent.putExtra("url", url);
+    actionIntent.putExtra("push_id", pushId);
+    actionIntent.putExtra("button_text", "default");
+    PendingIntent actionPendingIntent = PendingIntent.getBroadcast(
+      this,
+      0,
+      actionIntent,
+      PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+    );
+    notificationBuilder.setContentIntent(actionPendingIntent);
     int notificationId = (int) System.currentTimeMillis();
     notificationManager.notify(notificationId, notificationBuilder.build());
   }

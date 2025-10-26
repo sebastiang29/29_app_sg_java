@@ -27,19 +27,26 @@ public class NotificationActionReceiver extends BroadcastReceiver {
     Log.d(TAG, "Button clicked: " + buttonText + ", URL: " + url);
     Log.d(TAG, "Server URL: " + serverUrl);
     Log.d(TAG, "Push ID: " + pushId);
+    /* if (pushId != null && buttonText != null) {
+      sendHttpRequest(context, serverUrl, url, pushId, buttonText);
+    } */
     if (url != null) {
       try {
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(browserIntent);
+        if (url.startsWith("https://")) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+           browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+          context.startActivity(browserIntent);
+        } else if (url.startsWith("/")) {
+          Intent internalIntent = new Intent(context, InternalActivity.class);
+          internalIntent.putExtra("url", url);
+          internalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+          context.startActivity(internalIntent);
+        }
       } catch (Exception e) {
         Log.e(TAG, "Error opening URL: " + e.getMessage());
         e.printStackTrace();
       }
     }
-    /* if (pushId != null && buttonText != null) {
-      sendHttpRequest(context, serverUrl, url, pushId, buttonText);
-    } */
     // Muestra un Toast como confirmación
     //Toast.makeText(context, "Abriendo: " + url, Toast.LENGTH_SHORT).show();
   }
