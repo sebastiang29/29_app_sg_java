@@ -5,6 +5,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -126,15 +128,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     } else {
       Log.d(TAG, "❌ No notification payload");
     }
-    String title = null;
+    /* String title = null;
     String body = null;
-    String pushId = remoteMessage.getMessageId();
     if (remoteMessage.getNotification() != null) {
       title = remoteMessage.getNotification().getTitle();
       body = remoteMessage.getNotification().getBody();
     }
     if (title == null) title = "Notificación";
-    if (body == null) body = "Prueba de notificación";
+    if (body == null) body = "Prueba de notificación"; */
+    String title = remoteMessage.getData().get("title");
+    String body = remoteMessage.getData().get("body");
+    String image = remoteMessage.getData().get("image");
+    String pushId = remoteMessage.getMessageId();
     String url = remoteMessage.getData().get("url");
     String button1Text = remoteMessage.getData().get("button1_text");
     String button1Url = remoteMessage.getData().get("button1_url");
@@ -144,6 +149,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
       showNotificationWithButtons(
         title,
         body,
+        image,
         pushId,
         button1Text,
         button1Url,
@@ -151,7 +157,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         button2Url
       );
     } else {
-      showNotification(title, body, url, pushId);
+      showNotification(title, body, image, url, pushId);
     }
   }
 
@@ -183,8 +189,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
       );
   }
 
-  private void showNotification(String title, String body, String url, String pushId) {
+  private void showNotification(
+    String title,
+    String body,
+    String imageUrl,
+    String url,
+    String pushId
+  ) {
     Log.d(TAG, "Mostrando notificación simple");
+    Bitmap bigPicture = null;
+    if (imageUrl != null && !imageUrl.isEmpty()) {
+      bigPicture = getBitmapFromUrl(imageUrl);
+    }
     NotificationManager notificationManager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     String channelId = "fcm_notifications";
@@ -199,6 +215,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
       channel.enableLights(true);
       notificationManager.createNotificationChannel(channel);
     }
+    int notificationId = (int) System.currentTimeMillis();
     NotificationCompat.Builder notificationBuilder =
       new NotificationCompat.Builder(this, channelId)
         .setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -210,11 +227,21 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         .setFullScreenIntent(null, true)
         .setCategory(NotificationCompat.CATEGORY_MESSAGE)
         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+    if (bigPicture != null) {
+      notificationBuilder.setStyle(
+        new NotificationCompat.BigPictureStyle()
+          .bigPicture(bigPicture)
+          .bigLargeIcon((Bitmap) null)
+      );
+    }
     Intent actionIntent = new Intent(this, NotificationActionReceiver.class);
-    actionIntent.setAction("com.example.a29_app_sg.push_not.NOTIFICATION_ACTION");
+    actionIntent.setAction(
+      "com.example.a29_app_sg.push_not.NOTIFICATION_ACTION"
+    );
     actionIntent.putExtra("url", url);
     actionIntent.putExtra("push_id", pushId);
     actionIntent.putExtra("button_text", "default");
+    actionIntent.putExtra("notification_id", String.valueOf(notificationId));
     PendingIntent actionPendingIntent = PendingIntent.getBroadcast(
       this,
       0,
@@ -222,19 +249,23 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
       PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
     );
     notificationBuilder.setContentIntent(actionPendingIntent);
-    int notificationId = (int) System.currentTimeMillis();
     notificationManager.notify(notificationId, notificationBuilder.build());
   }
 
   private void showNotificationWithButtons(
     String title,
     String body,
+    String imageUrl,
     String pushId,
     String button1Text,
     String button1Url,
     String button2Text,
     String button2Url
   ) {
+    Bitmap bigPicture = null;
+    if (imageUrl != null && !imageUrl.isEmpty()) {
+      bigPicture = getBitmapFromUrl(imageUrl);
+    }
     Log.d(TAG, "Mostrando notificación con botones");
     NotificationManager notificationManager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -250,6 +281,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
       channel.enableLights(true);
       notificationManager.createNotificationChannel(channel);
     }
+    int notificationId = (int) System.currentTimeMillis();
     NotificationCompat.Builder notificationBuilder =
       new NotificationCompat.Builder(this, channelId)
         .setSmallIcon(R.drawable.ic_launcher_foreground) // Cambia esto por tu ícono
@@ -261,12 +293,22 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         .setFullScreenIntent(null, true)
         .setCategory(NotificationCompat.CATEGORY_MESSAGE)
         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+    if (bigPicture != null) {
+      notificationBuilder.setStyle(
+        new NotificationCompat.BigPictureStyle()
+          .bigPicture(bigPicture)
+          .bigLargeIcon((Bitmap) null)
+      );
+    }
     // Botón 1
     Intent actionIntent1 = new Intent(this, NotificationActionReceiver.class);
-    actionIntent1.setAction("com.example.a29_app_sg.push_not.NOTIFICATION_ACTION");
+    actionIntent1.setAction(
+      "com.example.a29_app_sg.push_not.NOTIFICATION_ACTION"
+    );
     actionIntent1.putExtra("url", button1Url);
     actionIntent1.putExtra("push_id", pushId);
     actionIntent1.putExtra("button_text", button1Text);
+    actionIntent1.putExtra("notification_id", String.valueOf(notificationId));
     PendingIntent actionPendingIntent1 = PendingIntent.getBroadcast(
       this,
       1,
@@ -281,10 +323,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     // Botón 2
     if (button2Text != null && button2Url != null) {
       Intent actionIntent2 = new Intent(this, NotificationActionReceiver.class);
-      actionIntent2.setAction("com.example.a29_app_sg.push_not.NOTIFICATION_ACTION");
+      actionIntent2.setAction(
+        "com.example.a29_app_sg.push_not.NOTIFICATION_ACTION"
+      );
       actionIntent2.putExtra("url", button2Url);
       actionIntent2.putExtra("push_id", pushId);
       actionIntent2.putExtra("button_text", button2Text);
+      actionIntent2.putExtra("notification_id", String.valueOf(notificationId));
       PendingIntent actionPendingIntent2 = PendingIntent.getBroadcast(
         this,
         2,
@@ -297,7 +342,21 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         actionPendingIntent2
       );
     }
-    int notificationId = (int) System.currentTimeMillis();
     notificationManager.notify(notificationId, notificationBuilder.build());
+  }
+
+  private Bitmap getBitmapFromUrl(String imageUrl) {
+    try {
+      java.net.URL url = new java.net.URL(imageUrl);
+      java.net.HttpURLConnection connection =
+        (java.net.HttpURLConnection) url.openConnection();
+      connection.setDoInput(true);
+      connection.connect();
+      java.io.InputStream input = connection.getInputStream();
+      return android.graphics.BitmapFactory.decodeStream(input);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 }

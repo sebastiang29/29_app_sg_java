@@ -1,5 +1,6 @@
 package com.example.a29_app_sg.push_not;
 
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,24 +25,36 @@ public class NotificationActionReceiver extends BroadcastReceiver {
     String url = intent.getStringExtra("url");
     String pushId = intent.getStringExtra("push_id");
     String buttonText = intent.getStringExtra("button_text");
-    Log.d(TAG, "Button clicked: " + buttonText + ", URL: " + url);
+    int notificationId = Integer.parseInt(
+      intent.getStringExtra("notification_id")
+    );
     Log.d(TAG, "Server URL: " + serverUrl);
     Log.d(TAG, "Push ID: " + pushId);
+    Log.d(TAG, "Notification ID: " + notificationId);
     /* if (pushId != null && buttonText != null) {
       sendHttpRequest(context, serverUrl, url, pushId, buttonText);
     } */
-    if (url != null) {
+    if (url != null && !url.isEmpty() && (url.startsWith("https://"))) {
       try {
-        if (url.startsWith("https://")) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-           browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        Log.d(TAG, "Button clicked: " + buttonText + ", URL: " + url);
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(browserIntent);
+        NotificationManager notificationManager =
+          (NotificationManager) context.getSystemService(
+            Context.NOTIFICATION_SERVICE
+          );
+        /* if (url.startsWith("https://")) {
+          Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+          browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
           context.startActivity(browserIntent);
         } else if (url.startsWith("/")) {
           Intent internalIntent = new Intent(context, InternalActivity.class);
           internalIntent.putExtra("url", url);
           internalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
           context.startActivity(internalIntent);
-        }
+        } */
+        notificationManager.cancel(notificationId);
       } catch (Exception e) {
         Log.e(TAG, "Error opening URL: " + e.getMessage());
         e.printStackTrace();
