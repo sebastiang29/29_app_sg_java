@@ -1,4 +1,4 @@
-package com.example.a29_app_sg.push_not;
+package com.netsend;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;

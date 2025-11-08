@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import android.util.Log
 
 //Plugin FCM
-import com.example.a29_app_sg.push_not.MyFirebaseMessagingService
+import com.netsend.MyFirebaseMessagingService
 //Plugin FCM
 //Permisos FCM
 import android.Manifest

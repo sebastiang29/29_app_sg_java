@@ -1,4 +1,4 @@
-package com.example.a29_app_sg.push_not;
+package com.netsend;
 
 import android.content.Context;
 import android.util.Log;
