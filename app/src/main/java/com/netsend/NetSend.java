@@ -54,10 +54,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
   @Override
   public void registerToken(Context context, String userKey, String token) {
-    Log.d(TAG, "Refreshed token: " + token);
-    TokenStorageManager tokenStorageManager = new TokenStorageManager(context);
-    tokenStorageManager.saveToken(token);
     try {
+      Log.d(TAG, "Refreshed token: " + token);
+      TokenStorageManager tokenStorageManager = new TokenStorageManager(context);
+      tokenStorageManager.saveToken(token);
       String serverUrl = "https://TU_BACKEND/registrar_token";
       JSONObject headerJson = new JSONObject();
       headerJson.put("x-user-key", userKey);
