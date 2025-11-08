@@ -60,7 +60,7 @@ public class MainActivity extends ComponentActivity {
   }
 
   private void initializeFCM() {
-    MyFirebaseMessagingService.initializeFCMToken(this);
+    MyFirebaseMessagingService.initializeNetSend(this, "YOUR_USER_KEY_HERE");
   }
 
   public void requestPushPermissions() {

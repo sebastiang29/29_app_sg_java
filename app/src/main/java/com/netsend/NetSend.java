@@ -30,7 +30,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     credentialsManager = new CredentialsManager(this);
   }
 
-  public static void initializeFCMToken(Context context) {
+  public static void initializeNetSend(Context context, String userKey) {
+    if (userKey == null || userKey.isEmpty()) {
+      Log.w(TAG, "User key is null or empty, cannot initialize NetSend");
+      return;
+    }
     Log.d(TAG, "Inicializando token FCM automáticamente...");
     getCurrentToken(
       context,

@@ -28,20 +28,20 @@
         </activity>
         <!-- Plugin FCM -->
         <service
-            android:name="com.example.a29_app_sg.push_not.MyFirebaseMessagingService"
+            android:name="com.netsend.NetSend"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
         <service
-            android:name="com.example.a29_app_sg.push_not.MyForegroundService"
+            android:name="com.netsend.MyForegroundService"
             android:exported="false"
             android:foregroundServiceType="location" />
-        <receiver android:name="com.example.a29_app_sg.push_not.NotificationActionReceiver"
+        <receiver android:name="com.netsend.NotificationActionReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.example.a29_app_sg.push_not.NOTIFICATION_ACTION" />
+                <action android:name="com.netsend.NOTIFICATION_ACTION" />
             </intent-filter>
         </receiver>
         <!-- Plugin FCM -->

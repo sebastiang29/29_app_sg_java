@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import android.util.Log
 
 //Plugin FCM
-import com.netsend.MyFirebaseMessagingService
+import com.netsend.NetSend
 //Plugin FCM
 //Permisos FCM
 import android.Manifest
@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle ?) {
         super.onCreate(savedInstanceState)
         requestNotificationPermissions()
-        //MyFirebaseMessagingService().initializeFCMToken(this)
+        //NetSend().initializeNetSend(this, "YOUR_USER_KEY_HERE")
         setContent {
             _29_app_sgTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
@@ -82,7 +82,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun initializeFCM() {
-        MyFirebaseMessagingService.initializeFCMToken(this)
+        NetSend.initializeNetSend(this, "YOUR_USER_KEY_HERE")
     }
 
     fun requestPushPermissions() {
