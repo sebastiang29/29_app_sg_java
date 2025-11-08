@@ -15,15 +15,17 @@ public class HttpRequestManager {
   public static void sendPostRequest(
     Context context,
     String serverUrl,
-    JSONObject jsonInput
+    JSONObject headerJson,
+    JSONObject bodyJson
   ) {
-    sendPostRequest(context, serverUrl, jsonInput, null);
+    sendPostRequest(context, serverUrl, headerJson, bodyJson, null);
   }
 
   public static void sendPostRequest(
     Context context,
     String serverUrl,
-    JSONObject jsonInput,
+    JSONObject headerJson,
+    JSONObject bodyJson,
     HttpCallback callback
   ) {
     new Thread(
@@ -41,6 +43,13 @@ public class HttpRequestManager {
               }
               return;
             }
+            if (headerJson != null) {
+              Iterator<String> keys = headerJson.keys();
+              while (keys.hasNext()) {
+                String key = keys.next();
+                conn.setRequestProperty(key, headerJson.getString(key));
+              }
+            }
             URL url = new URL(serverUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
@@ -51,7 +60,7 @@ public class HttpRequestManager {
               conn.setRequestProperty("Authorization", "Bearer " + apiKey);
             }
             conn.setDoOutput(true);
-            String jsonInputString = jsonInput.toString();
+            String jsonInputString = bodyJson.toString();
             try (OutputStream os = conn.getOutputStream()) {
               byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
               os.write(input, 0, input.length);

@@ -1,16 +1,20 @@
 package com.netsend;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import com.example.a29_app_sg.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -18,10 +22,6 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import org.json.JSONObject;
-import android.app.Activity;
-import android.content.pm.PackageManager;
-import androidx.core.content.ContextCompat;
-import android.Manifest;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
@@ -39,16 +39,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
       Log.w(TAG, "User key is null or empty, cannot initialize NetSend");
       return;
     }
-    Log.d(TAG, "Inicializando token FCM automáticamente...");
     getCurrentToken(
       context,
       new OnTokenReceivedListener() {
         @Override
         public void onTokenReceived(String token) {
-          if (token != null) {
-            Log.d(TAG, "Token obtenido automáticamente: " + token);
-          } else {
-            Log.w(TAG, "No se pudo obtener el token automáticamente");
+          if (token != null && !token.isEmpty()) {
+            registerToken(context, userKey, token);
           }
         }
       }
@@ -56,51 +53,19 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
   }
 
   @Override
-  public void onNewToken(String token) {
+  public void registerToken(Context context, String userKey, String token) {
     Log.d(TAG, "Refreshed token: " + token);
-    TokenStorageManager tokenStorageManager = new TokenStorageManager(this);
+    TokenStorageManager tokenStorageManager = new TokenStorageManager(context);
     tokenStorageManager.saveToken(token);
-    // registerToken(this, "user_id", null);
-  }
-
-  public static void registerToken(Context context, String identificacion) {
     try {
-      registerToken(context, identificacion, null);
+      String serverUrl = "https://TU_BACKEND/registrar_token";
+      JSONObject headerJson = new JSONObject();
+      headerJson.put("x-user-key", userKey);
+      JSONObject bodyJson = new JSONObject();
+      bodyJson.put("token", token);
+      HttpRequestManager.sendHttpRequest(context, serverUrl, headerJson, bodyJson);
     } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
-
-  public static void registerToken(
-    Context context,
-    String identificacion,
-    HttpRequestManager.HttpCallback callback
-  ) {
-    try {
-      TokenStorageManager tokenStorageManager = new TokenStorageManager(
-        context
-      );
-      CredentialsManager credentialsManager = new CredentialsManager(context);
-      String token = tokenStorageManager.getToken();
-      String serverUrl = credentialsManager.getServerUrl() + "/register_token";
-      if (token == null) {
-        Log.w(TAG, "Token is null, cannot send to server");
-        if (callback != null) callback.onError("FCM Token is not available");
-        return;
-      }
-      JSONObject jsonInput = new JSONObject();
-      jsonInput.put("token", token);
-      jsonInput.put("identificacion", identificacion);
-      HttpRequestManager.sendPostRequest(
-        context,
-        serverUrl,
-        jsonInput,
-        callback
-      );
-    } catch (Exception e) {
-      Log.e(TAG, "Error in registerToken: " + e.getMessage());
-      if (callback != null) callback.onError("Exception: " + e.getMessage());
-      e.printStackTrace();
+      Log.e(TAG, "Error registering token: " + e.getMessage());
     }
   }
 
@@ -370,7 +335,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
   public static void requestPushPermission(Activity activity) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      if (ContextCompat.checkSelfPermission(activity, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+      if (
+        ContextCompat.checkSelfPermission(
+          activity,
+          android.Manifest.permission.POST_NOTIFICATIONS
+        ) !=
+        PackageManager.PERMISSION_GRANTED
+      ) {
         activity.requestPermissions(
           new String[] { android.Manifest.permission.POST_NOTIFICATIONS },
           101
