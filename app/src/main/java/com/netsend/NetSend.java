@@ -18,6 +18,10 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import org.json.JSONObject;
+import android.app.Activity;
+import android.content.pm.PackageManager;
+import androidx.core.content.ContextCompat;
+import android.Manifest;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
@@ -361,6 +365,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     } catch (Exception e) {
       e.printStackTrace();
       return null;
+    }
+  }
+
+  public static void requestPushPermission(Activity activity) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      if (ContextCompat.checkSelfPermission(activity, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+        activity.requestPermissions(
+          new String[] { android.Manifest.permission.POST_NOTIFICATIONS },
+          101
+        );
+      }
     }
   }
 }

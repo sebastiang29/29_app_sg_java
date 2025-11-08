@@ -22,84 +22,16 @@ import android.util.Log
 //Plugin FCM
 import com.netsend.NetSend
 //Plugin FCM
-//Permisos FCM
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
-//Permisos FCM
 
 class MainActivity : ComponentActivity() {
-    //Permisos FCM
     companion object {
         private const val TAG = "MainActivity"
     }
 
-    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { 
-        isGranted: Boolean ->
-        if (isGranted) {
-            Log.d(TAG, "✅ Permiso de notificaciones concedido")
-        } else {
-            Log.w(TAG, "❌ Permiso de notificaciones denegado")
-        }
-        initializeFCM()
-    }
-    //Permisos FCM
     override fun onCreate(savedInstanceState: Bundle ?) {
         super.onCreate(savedInstanceState)
-        requestNotificationPermissions()
-        //NetSend().initializeNetSend(this, "YOUR_USER_KEY_HERE")
-        setContent {
-            _29_app_sgTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) {
-                    innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
-        }
-    }
-
-    //Permisos FCM
-    private fun requestNotificationPermissions() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            when {
-                ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED -> {
-                    Log.d(TAG, "🔔 Permiso de notificaciones ya concedido")
-                    initializeFCM()
-                }
-                else -> {
-                    Log.d(TAG, "🔔 Solicitando permiso de notificaciones")
-                    requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-                }
-            }
-        } else {
-            Log.d(TAG, "🔔 No se requieren permisos para notificaciones en esta versión de Android")
-            initializeFCM()
-        }
-    }
-
-    private fun initializeFCM() {
         NetSend.initializeNetSend(this, "YOUR_USER_KEY_HERE")
     }
-
-    fun requestPushPermissions() {
-        Log.d(TAG, "🔔 Solicitando permisos desde Service...")
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-        }
-    }
-
-    fun hasNotificationPermission(): Boolean {
-        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
-    }
-    //Permisos FCM
 }
 
 @Composable
@@ -121,9 +53,9 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         // ✅ BOTÓN 1: Solicitar permisos push
         Button(
             onClick = {
-                if (context is MainActivity) {
-                    context.requestPushPermissions()
-                }
+                val hasPermission = NetSend.hasNotificationPermission(context)
+                val status = if (hasPermission) "✅ CONCEDIDOS" else "❌ DENEGADOS"
+                Log.d("MainActivity", "📱 Estado permisos: $status")
             },
             modifier = Modifier
                 .fillMaxWidth()
