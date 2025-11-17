@@ -1,4 +1,4 @@
-package com.netsend;
+/* package com.netsend;
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -38,4 +38,4 @@ public class PluginFlutter implements FlutterPlugin, MethodCallHandler {
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         channel.setMethodCallHandler(null);
     }
-}
+} */

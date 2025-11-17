@@ -1,4 +1,4 @@
-package com.netsend;
+/* package com.netsend;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -27,3 +27,4 @@ public class PluginReact extends ReactContextBaseJavaModule {
       }
     }
 }
+ */

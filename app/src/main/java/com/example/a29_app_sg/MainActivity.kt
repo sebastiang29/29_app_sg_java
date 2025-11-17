@@ -53,9 +53,9 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         // ✅ BOTÓN 1: Solicitar permisos push
         Button(
             onClick = {
-                val hasPermission = NetSend.hasNotificationPermission(context)
-                val status = if (hasPermission) "✅ CONCEDIDOS" else "❌ DENEGADOS"
-                Log.d("MainActivity", "📱 Estado permisos: $status")
+                /* val hasPermission = NetSend.hasNotificationPermission(context)
+                val status = if (hasPermission) "✅ CONCEDIDOS" else "❌ DENEGADOS" */
+                Log.d("MainActivity", "📱 Estado permisos")
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -68,9 +68,9 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         Button(
             onClick = {
                 if (context is MainActivity) {
-                    val hasPermission = context.hasNotificationPermission()
-                    val status = if (hasPermission) "✅ CONCEDIDOS" else "❌ DENEGADOS"
-                    Log.d("MainActivity", "📱 Estado permisos: $status")
+                    /* val hasPermission = context.hasNotificationPermission()
+                    val status = if (hasPermission) "✅ CONCEDIDOS" else "❌ DENEGADOS" */
+                    Log.d("MainActivity", "📱 Estado permisos")
                 }
             },
             modifier = Modifier.fillMaxWidth()

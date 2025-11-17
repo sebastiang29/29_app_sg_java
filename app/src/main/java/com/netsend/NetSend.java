@@ -52,8 +52,8 @@ public class NetSend extends FirebaseMessagingService {
     );
   }
 
-  @Override
-  public void registerToken(Context context, String userKey, String token) {
+  /* @Override */
+  public static void registerToken(Context context, String userKey, String token) {
     try {
       Log.d(TAG, "Refreshed token: " + token);
       TokenStorageManager tokenStorageManager = new TokenStorageManager(context);
