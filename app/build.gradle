@@ -2,9 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    //Plugin FCM
+    //Plugin FCM Java
     id 'com.google.gms.google-services'
-    //Plugin FCM
 }
 
 android {
@@ -57,12 +56,14 @@ dependencies {
     debugImplementation libs.androidx.compose.ui.tooling
     debugImplementation libs.androidx.compose.ui.test.manifest
 
-    //Plugin FCM
+    //Plugin FCM Java
     implementation platform('com.google.firebase:firebase-bom:32.1.1')
     implementation 'com.google.firebase:firebase-messaging'
     implementation 'com.google.firebase:firebase-analytics'
+
+    //Plugin FCM Kotlin
+    //apply(plugin = "com.google.gms.google-services")
     //implementation (platform("com.google.firebase:firebase-bom:32.1.1"))
     //implementation ("com.google.firebase:firebase-messaging")
     //implementation ("com.google.firebase:firebase-analytics")
-    //Plugin FCM
 }
