@@ -21,6 +21,7 @@ import android.util.Log
 
 //Plugin FCM
 import com.netsend.NetSend
+import com.google.firebase.FirebaseApp
 //Plugin FCM
 
 class MainActivity : ComponentActivity() {
@@ -30,6 +31,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle ?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this);
         NetSend.initializeNetSend(this, "YOUR_USER_KEY_HERE")
     }
 }
