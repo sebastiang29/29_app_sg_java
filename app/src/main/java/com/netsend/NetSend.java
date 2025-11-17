@@ -23,9 +23,9 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import org.json.JSONObject;
 
-public class MyFirebaseMessagingService extends FirebaseMessagingService {
+public class NetSend extends FirebaseMessagingService {
 
-  private static final String TAG = "FCMService";
+  private static final String TAG = "[NetSend]FCMService";
   private CredentialsManager credentialsManager;
 
   @Override
@@ -58,12 +58,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
       Log.d(TAG, "Refreshed token: " + token);
       TokenStorageManager tokenStorageManager = new TokenStorageManager(context);
       tokenStorageManager.saveToken(token);
-      String serverUrl = "https://TU_BACKEND/registrar_token";
+      /* String serverUrl = "https://TU_BACKEND/registrar_token";
       JSONObject headerJson = new JSONObject();
       headerJson.put("x-user-key", userKey);
       JSONObject bodyJson = new JSONObject();
       bodyJson.put("token", token);
-      HttpRequestManager.sendHttpRequest(context, serverUrl, headerJson, bodyJson);
+      HttpRequestManager.sendHttpRequest(context, serverUrl, headerJson, bodyJson); */
     } catch (Exception e) {
       Log.e(TAG, "Error registering token: " + e.getMessage());
     }

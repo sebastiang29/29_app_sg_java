@@ -6,9 +6,9 @@ import android.util.Log;
 
 public class TokenStorageManager {
 
-  private static final String TAG = "TokenStorageManager";
-  private static final String PREFS_NAME = "fcm_token_prefs";
-  private static final String TOKEN_KEY = "fcm_token";
+  private static final String TAG = "[NetSend]TokenStorage";
+  private static final String PREFS_NAME = "netsend_prefs";
+  private static final String TOKEN_KEY = "netsend_token";
   private SharedPreferences sharedPreferences;
 
   public TokenStorageManager(Context context) {
