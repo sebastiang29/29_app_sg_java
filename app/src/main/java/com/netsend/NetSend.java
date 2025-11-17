@@ -44,9 +44,9 @@ public class NetSend extends FirebaseMessagingService {
       new OnTokenReceivedListener() {
         @Override
         public void onTokenReceived(String token) {
-          if (token != null && !token.isEmpty()) {
+          /* if (token != null && !token.isEmpty()) {
             registerToken(context, userKey, token);
-          }
+          } */
         }
       }
     );
