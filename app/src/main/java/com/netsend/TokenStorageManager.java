@@ -9,6 +9,7 @@ public class TokenStorageManager {
   private static final String TAG = "[NetSend]TokenStorage";
   private static final String PREFS_NAME = "netsend_prefs";
   private static final String TOKEN_KEY = "netsend_token";
+  private static final String USER_KEY = "netsend_user_key";
   private SharedPreferences sharedPreferences;
 
   public TokenStorageManager(Context context) {
@@ -31,6 +32,21 @@ public class TokenStorageManager {
     return token;
   }
 
+  public void saveUserKey(String userKey) {
+    SharedPreferences.Editor editor = sharedPreferences.edit();
+    editor.putString(USER_KEY, userKey);
+    editor.apply();
+    Log.d(TAG, "User key saved: " + userKey);
+  }
+
+  public String getUserKey() {
+    String userKey = sharedPreferences.getString(USER_KEY, null);
+    Log.d(TAG, "User key retrieved: " + (userKey != null
+      ? userKey
+      : "null"));
+    return userKey;
+  }
+  
   public boolean hasToken() {
     return getToken() != null;
   }
