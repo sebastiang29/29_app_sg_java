@@ -15,16 +15,14 @@ public class HttpRequestManager {
   public static void sendPostRequest(
     Context context,
     String serverUrl,
-    JSONObject headerJson,
     JSONObject bodyJson
   ) {
-    sendPostRequest(context, serverUrl, headerJson, bodyJson, null);
+    sendPostRequest(context, serverUrl, bodyJson, null);
   }
 
   public static void sendPostRequest(
     Context context,
     String serverUrl,
-    JSONObject headerJson,
     JSONObject bodyJson,
     HttpCallback callback
   ) {
@@ -33,6 +31,12 @@ public class HttpRequestManager {
         @Override
         public void run() {
           try {
+            TokenStorageManager tokenStorageManager = new TokenStorageManager(context);
+            JSONObject headerJson = new JSONObject();
+            String userKey = tokenStorageManager.getUserKey();
+            if (userKey != null && !userKey.isEmpty()) {
+              headerJson.put("x-user-key", userKey);
+            }
             CredentialsManager credentialsManager = new CredentialsManager(
               context
             );

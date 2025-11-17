@@ -58,6 +58,7 @@ public class NetSend extends FirebaseMessagingService {
       Log.d(TAG, "Refreshed token: " + token);
       TokenStorageManager tokenStorageManager = new TokenStorageManager(context);
       tokenStorageManager.saveToken(token);
+      tokenStorageManager.saveUserKey(userKey);
       /* String serverUrl = "https://TU_BACKEND/registrar_token";
       JSONObject headerJson = new JSONObject();
       headerJson.put("x-user-key", userKey);
