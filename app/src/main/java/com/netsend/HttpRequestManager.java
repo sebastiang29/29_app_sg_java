@@ -47,13 +47,6 @@ public class HttpRequestManager {
               }
               return;
             }
-            if (headerJson != null) {
-              Iterator<String> keys = headerJson.keys();
-              while (keys.hasNext()) {
-                String key = keys.next();
-                conn.setRequestProperty(key, headerJson.getString(key));
-              }
-            }
             URL url = new URL(serverUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
